@@ -5,8 +5,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 class PlaceDetailsScreen extends StatelessWidget {
   final Place place;
+  final bool isConnected;
 
-  PlaceDetailsScreen({required this.place});
+  PlaceDetailsScreen({required this.place, required this.isConnected});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +29,7 @@ class PlaceDetailsScreen extends StatelessWidget {
         title: Text(place.title),
         actions: [
           IconButton(
-            icon: Icon(Icons.phone_callback),
+            icon: const Icon(Icons.phone_callback),
             onPressed: () {
               _makePhoneCall(place.phoneNumber);
             },
@@ -55,13 +56,13 @@ class PlaceDetailsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               Card(
                 elevation: 3,
-                margin: EdgeInsets.all(16.0),
+                margin: const EdgeInsets.all(16.0),
                 child: ListTile(
-                  leading: Icon(Icons.phone, color: Colors.blue),
-                  title: Text(
+                  leading: const Icon(Icons.phone, color: Colors.blue),
+                  title: const Text(
                     'Telefone:',
                     style: TextStyle(
                       fontSize: 18.0,
@@ -71,16 +72,16 @@ class PlaceDetailsScreen extends StatelessWidget {
                   ),
                   subtitle: Text(
                     place.phoneNumber,
-                    style: TextStyle(fontSize: 16.0),
+                    style: const TextStyle(fontSize: 16.0),
                   ),
                 ),
               ),
               Card(
                 elevation: 3,
-                margin: EdgeInsets.all(16.0),
+                margin: const EdgeInsets.all(16.0),
                 child: ListTile(
-                  leading: Icon(Icons.location_on, color: Colors.blue),
-                  title: Text(
+                  leading: const Icon(Icons.location_on, color: Colors.blue),
+                  title: const Text(
                     'Endereço:',
                     style: TextStyle(
                       fontSize: 18.0,
@@ -90,10 +91,10 @@ class PlaceDetailsScreen extends StatelessWidget {
                   ),
                   subtitle: Text(
                     place.location!.address,
-                    style: TextStyle(fontSize: 16.0),
+                    style: const TextStyle(fontSize: 16.0),
                   ),
                 ),
-              ),                        
+              ),
               Container(
                 height: 170,
                 width: double.infinity,
@@ -104,8 +105,8 @@ class PlaceDetailsScreen extends StatelessWidget {
                     color: Colors.grey,
                   ),
                 ),
-                child: location == null
-                    ? Text('Localização não informada!')
+                child: location == null || isConnected == false
+                    ? const Text('Não foi possível carregar a localização!')
                     : Image.network(
                         location,
                         fit: BoxFit.cover,

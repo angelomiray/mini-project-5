@@ -6,9 +6,15 @@ import '../screens/map_screen.dart';
 import '../utils/location_util.dart';
 
 class LocationInput extends StatefulWidget {
-  final Function onSelectLocation;
+  final Function(double lat, double lng) onSelectLocation;
+  final double defaultLat;
+  final double defaultLng;
 
-  LocationInput(this.onSelectLocation);
+  LocationInput({
+    required this.onSelectLocation,
+    required this.defaultLat,
+    required this.defaultLng,
+  });
 
   @override
   _LocationInputState createState() => _LocationInputState();
@@ -17,45 +23,62 @@ class LocationInput extends StatefulWidget {
 class _LocationInputState extends State<LocationInput> {
   String? _previewImageUrl;
 
-  Future<void> _getCurrentUserLocation() async {
-    final locData =
-        await Location().getLocation(); //pega localização do usuário
-    print(locData.latitude);
-    print(locData.longitude);
+  @override
+  void initState() {
+    super.initState();
+    _loadDefaultLocation();
+  }
 
-    //CARREGANDO NO MAPA
-
+  Future<void> _loadDefaultLocation() async {
     final staticMapImageUrl = LocationUtil.generateLocationPreviewImage(
-        latitude: locData.latitude, longitude: locData.longitude);
+      latitude: widget.defaultLat,
+      longitude: widget.defaultLng,
+    );
 
     setState(() {
       _previewImageUrl = staticMapImageUrl;
     });
 
-    widget.onSelectLocation(locData.latitude, locData.longitude);
+    widget.onSelectLocation(widget.defaultLat, widget.defaultLng);
+  }
+
+  Future<void> _getCurrentUserLocation() async {
+    final locData = await Location().getLocation();
+    final staticMapImageUrl = LocationUtil.generateLocationPreviewImage(
+      latitude: locData.latitude,
+      longitude: locData.longitude,
+    );
+
+    setState(() {
+      _previewImageUrl = staticMapImageUrl;
+    });
+
+    widget.onSelectLocation(locData.latitude!, locData.longitude!);
   }
 
   Future<void> _selectOnMap() async {
     final LatLng selectedPosition = await Navigator.of(context).push(
       MaterialPageRoute(
-          fullscreenDialog: true, builder: ((context) => MapScreen())),
+        fullscreenDialog: true,
+        builder: ((context) => MapScreen()),
+      ),
     );
 
     if (selectedPosition == null) return;
 
-    print(selectedPosition.latitude);
-    print(selectedPosition.longitude);
-
     final staticMapImageUrl = LocationUtil.generateLocationPreviewImage(
-        latitude: selectedPosition.latitude,
-        longitude: selectedPosition.longitude);
+      latitude: selectedPosition.latitude,
+      longitude: selectedPosition.longitude,
+    );
 
     setState(() {
       _previewImageUrl = staticMapImageUrl;
     });
 
     widget.onSelectLocation(
-        selectedPosition.latitude, selectedPosition.longitude);
+      selectedPosition.latitude,
+      selectedPosition.longitude,
+    );
   }
 
   Future<void> _openAddressFormModal(BuildContext context) async {
@@ -76,15 +99,18 @@ class _LocationInputState extends State<LocationInput> {
 
     if (enteredAddress != null && enteredPosition != null) {
       final staticMapImageUrl = LocationUtil.generateLocationPreviewImage(
-          latitude: enteredPosition!.latitude,
-          longitude: enteredPosition!.longitude);
+        latitude: enteredPosition!.latitude,
+        longitude: enteredPosition!.longitude,
+      );
 
       setState(() {
         _previewImageUrl = staticMapImageUrl;
       });
 
       widget.onSelectLocation(
-          enteredPosition!.latitude, enteredPosition!.longitude);
+        enteredPosition!.latitude,
+        enteredPosition!.longitude,
+      );
     }
   }
 
@@ -137,4 +163,3 @@ class _LocationInputState extends State<LocationInput> {
     );
   }
 }
-

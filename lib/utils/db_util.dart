@@ -6,13 +6,13 @@ class DbUtil {
   static Future<sql.Database> database() async {
     final dbPath = await sql.getDatabasesPath();
     return sql.openDatabase(
-      path.join(dbPath, 'places2.db'),
+      path.join(dbPath, 'places5.db'),
       onCreate: (db, version) {
         //executa o ddl para cirar o banco
         return db.execute(
-            'CREATE TABLE places (id TEXT PRIMARY KEY, title TEXT, image TEXT, latitude REAL, longitude REAL, address TEXT, phoneNumber TEXT)');
+            'CREATE TABLE places (id TEXT PRIMARY KEY, creatorId TEXT, title TEXT, image TEXT, latitude REAL, longitude REAL, address TEXT, phoneNumber TEXT)');
       },
-      version: 5,
+      version: 8,
     );
   }
 
@@ -29,7 +29,7 @@ class DbUtil {
       table,
       data,
       conflictAlgorithm: sql
-          .ConflictAlgorithm.replace, //se inserir algo conlfitante (substitui)
+          .ConflictAlgorithm.replace,
     );
   }
 

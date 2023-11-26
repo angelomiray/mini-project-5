@@ -36,8 +36,10 @@ class Place {
   PlaceLocation? location;
   File image;
   String phoneNumber;
+  String creatorId;
 
   Place({
+    required this.creatorId,
     required this.id,
     required this.title,
     this.location,
@@ -61,6 +63,7 @@ class Place {
   factory Place.fromJson(String key, Map<String, dynamic> json) {
     return Place(
       id: key,
+      creatorId: json['creatorId'] as String,
       title: json['title'] as String,
       phoneNumber: json['phoneNumber'] as String,
       location: PlaceLocation(

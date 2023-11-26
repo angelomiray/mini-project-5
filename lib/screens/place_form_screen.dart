@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mp5/models/place.dart';
+import 'package:mp5/models/user.dart';
+import 'package:mp5/provider/userDAO.dart';
 import 'package:provider/provider.dart';
 
 import '../components/image_input.dart';
@@ -21,11 +23,12 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
 
   Place place = Place(
       id: '-1',
+      creatorId: '-1',
       title: '',
       phoneNumber: '',
       image: File(''),
       location:
-          PlaceLocation(latitude: 0, longitude: 0, address: 'No address'));
+          PlaceLocation(latitude: -12.9714, longitude: -38.5014, address: 'No address'));
   bool isUpdate = false;
 
   //deve receber a imagem
@@ -50,12 +53,10 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
 
         final placeArg = arg as Place;
         _titleController.text = placeArg.title;
-        _phoneController.text = placeArg.phoneNumber;
-        _selectImage(placeArg.image);
-        _selectLocation(
-            placeArg.location!.latitude, placeArg.location!.longitude);        
+        _phoneController.text = placeArg.phoneNumber;        
 
         place.id = placeArg.id;
+        place.creatorId = placeArg.creatorId;
         place.title = placeArg.title;
         place.phoneNumber = placeArg.phoneNumber;
         place.image = placeArg.image;
@@ -73,32 +74,39 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
     lng = longitude;
   }
 
-  void _submitForm() async {
+  void _submitForm(User currentUser) async {
     if (_titleController.text.isEmpty || _pickedImage == null) {
       return;
     }
 
-    String address = 'address';
+    try {
+      String address = await PlaceLocation.getAddress(lat, lng);
 
-    address = await PlaceLocation.getAddress(lat, lng);
+      place.title = _titleController.text;
+      place.phoneNumber = _phoneController.text;
+      place.image = _pickedImage!;
+      place.location =
+          PlaceLocation(latitude: lat, longitude: lng, address: address);
+      place.creatorId = currentUser.id;
 
-    place.title = _titleController.text;
-    place.phoneNumber = _phoneController.text;
-    place.image = _pickedImage!;
-    place.location =
-        PlaceLocation(latitude: lat, longitude: lng, address: address);
+      if (!isUpdate) {
+        place.id = '-1';
+      }
 
-    if (!isUpdate) {
-      place.id = '-1';
+      Provider.of<GreatPlaces>(context, listen: false)
+          .savePlace(place, isUpdate);
+
+      Navigator.of(context).pop();
+    } catch (e) {
+      // Lidar com exceções, como falha na obtenção do endereço
+      print('Erro ao obter o endereço: $e');
     }
-
-    Provider.of<GreatPlaces>(context, listen: false).savePlace(place, isUpdate);
-
-    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
+    User currentUser = Provider.of<UserDAO>(context).currentUser;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Novo Lugar'),
@@ -129,7 +137,7 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
                     const SizedBox(height: 25),
                     ImageInput(_selectImage),
                     const SizedBox(height: 10),
-                    LocationInput(_selectLocation),
+                    LocationInput(onSelectLocation: _selectLocation, defaultLat: place.location!.latitude, defaultLng: place.location!.longitude),
                   ],
                 ),
               ),
@@ -139,12 +147,14 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
             icon: const Icon(Icons.add),
             label: const Text('Adicionar'),
             style: ElevatedButton.styleFrom(
-              primary: Theme.of(context).colorScheme.secondary,
-              onPrimary: Colors.black,
+              foregroundColor: Colors.black,
+              backgroundColor: Theme.of(context).colorScheme.secondary,
               elevation: 0,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            onPressed: _submitForm,
+            onPressed: () {
+              _submitForm(currentUser);
+            },
           ),
         ],
       ),

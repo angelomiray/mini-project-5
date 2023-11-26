@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:mp5/provider/userDAO.dart';
 import 'package:mp5/screens/place_details_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:connectivity/connectivity.dart';
@@ -57,6 +58,8 @@ class _PlacesListScreenState extends State<PlacesListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    String currentUserId = Provider.of<UserDAO>(context).currentUser.id;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Meus Lugares'),
@@ -83,7 +86,7 @@ class _PlacesListScreenState extends State<PlacesListScreen> {
 
               if (isConnected) {
                 await Provider.of<GreatPlaces>(context, listen: false)
-                    .fetchPlaces();
+                    .fetchPlaces(currentUserId);
               } else {
                 await Provider.of<GreatPlaces>(context, listen: false)
                     .loadLocalData();
@@ -98,7 +101,7 @@ class _PlacesListScreenState extends State<PlacesListScreen> {
       body: isConnected
           ? FutureBuilder(
               future: Provider.of<GreatPlaces>(context, listen: false)
-                  .fetchPlaces(),
+                  .fetchPlaces(currentUserId),
               builder: (ctx, snapshot) => handlePlacesSnapshot(snapshot),
             )
           : FutureBuilder(
@@ -155,7 +158,10 @@ class _PlacesListScreenState extends State<PlacesListScreen> {
     }
 
     if (snapshot.hasError) {
-      return Center(child: Text('Erro ao carregar os lugares'));
+      return Padding(
+        padding: const EdgeInsets.all(25.0),
+        child: Center(child: Text('Erro ao carregar os lugares. Recarregue a página clicando no botão de refresh no canto superior direito.')),
+      );
     }
 
     return Consumer<GreatPlaces>(
@@ -213,7 +219,7 @@ class _PlacesListScreenState extends State<PlacesListScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          PlaceDetailsScreen(place: greatPlaces.itemByIndex(index)),
+                          PlaceDetailsScreen(place: greatPlaces.itemByIndex(index), isConnected: isConnected,),
                     ),
                   );
                 },

@@ -38,6 +38,8 @@ dependencies:
   http: ^0.13.5
   connectivity: ^3.0.6
   url_launcher: ^6.2.1
+  crypto: ^3.0.3
+  local_auth: ^2.1.7
 
 dev_dependencies:
   flutter_test: 
