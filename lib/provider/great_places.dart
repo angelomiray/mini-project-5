@@ -19,13 +19,12 @@ class GreatPlaces with ChangeNotifier {
 
   //apenas itens do db local
   Future<void> loadLocalData() async {
-    final dataList = await DbUtil.getData('places');
-    print('here');
+    final dataList = await DbUtil.getData('places');    
     _items.clear();
     _items = dataList
         .map(
           (item) => Place(
-            id: item['id'],
+            id: item['id']  ,
             creatorId: item['creatorId'],
             title: item['title'],
             image: File(item['image']),
@@ -104,6 +103,7 @@ class GreatPlaces with ChangeNotifier {
       DbUtil.insert('places', {
         'id': newPlace.id,
         'title': newPlace.title,
+        'creatorId': newPlace.creatorId,
         'image': newPlace.image.path,
         'latitude': newPlace.location!.latitude,
         'longitude': newPlace.location!.longitude,
